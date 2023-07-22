@@ -15,7 +15,7 @@ class LoginPage extends StatelessWidget {
       body: SafeArea(
         child: Center(
           child: Column(
-            children: const [
+            children: [
               const SizedBox(
                 height: 50,
               ),
