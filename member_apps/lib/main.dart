@@ -14,10 +14,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Member Apk',
-      theme: ThemeData(
-        primarySwatch: Colors.blueGrey
-      ),
-      home: LoginPage(),    
+      theme: ThemeData(primarySwatch: Colors.blueGrey),
+      home: LoginPage(),
     );
   }
 }

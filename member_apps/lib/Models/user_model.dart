@@ -4,13 +4,13 @@ class users {
   final String email;
   final String password;
   final String phoneNumber;
-  final int dateOfBirth;
+  final int? dateOfBirth;
   final String userStatus;
   final int points;
   final int? storeID;
 
   const users(
-      {required this.userID,
+      {this.userID,
       required this.username,
       required this.email,
       required this.password,
@@ -18,7 +18,7 @@ class users {
       required this.dateOfBirth,
       required this.userStatus,
       required this.points,
-      required this.storeID});
+      this.storeID});
 
   factory users.fromJson(Map<String, dynamic> json) => users(
       userID: json['userID'],

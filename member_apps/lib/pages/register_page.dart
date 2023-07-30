@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:member_apps/Models/user_model.dart';
+import 'package:member_apps/Services/databaseHelper.dart';
 import 'package:member_apps/components/textfield.dart';
 import 'package:member_apps/components/dateOfBirth.dart';
 import 'package:member_apps/pages/login_page.dart';
@@ -11,12 +13,39 @@ class Register extends StatelessWidget {
   final confirmPasswordController = TextEditingController();
   final emailController = TextEditingController();
   final phoneNumController = TextEditingController();
+  int? selectedDOB;
+
+  void _onRegisterButtonPressed() async {
+    String email = emailController.text;
+    String username = usernameController.text;
+    String password = passwordController.text;
+    String confirmPassword = confirmPasswordController.text;
+    String phoneNumber = phoneNumController.text;
+    int? dateOfBirth = selectedDOB;
+
+    databaseHelper dbHelper = databaseHelper();
+    users newUser = users(
+      username: username,
+      email: email,
+      password: password,
+      phoneNumber: phoneNumber,
+      dateOfBirth: dateOfBirth,
+      userStatus: "member",
+      points: 0,
+    );
+
+    if (password == confirmPassword) {
+      dbHelper.registerUser(newUser);
+    } else {
+      return;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.lightBlue,
-      body: SafeArea(
+      body: SingleChildScrollView(
           child: Center(
         child: Column(
           children: [
@@ -87,14 +116,42 @@ class Register extends StatelessWidget {
             ),
 
             // Datepicker for date of birth
-            birthDate(),
+            // birthDate(),
+            TextFormField(
+              onTap: () async {
+                DateTime? pickedDate = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(1900),
+                  lastDate: DateTime.now(),
+                );
+
+                if (pickedDate != null) {
+                  selectedDOB = pickedDate.millisecondsSinceEpoch ~/ 1000;
+                }
+              },
+              readOnly: true,
+              decoration: InputDecoration(
+                labelText: 'Tanggal Lahir',
+              ),
+            ),
 
             const SizedBox(
               height: 25,
             ),
 
             // Submit register button
-            ElevatedButton(onPressed: () {}, child: Text("Daftar")),
+            ElevatedButton(
+                onPressed: () {
+                  if (passwordController.text != confirmPasswordController.text) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Konfirmasi kata sandi tidak sesuai')));
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Data anda akan diproses')));
+                  }
+                },
+                child: Text("Daftar")),
 
             const SizedBox(
               height: 25,
@@ -106,8 +163,7 @@ class Register extends StatelessWidget {
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => LoginPage()));
                 },
-                child: Text("Kembali")
-            ),
+                child: Text("Kembali")),
           ],
         ),
       )),

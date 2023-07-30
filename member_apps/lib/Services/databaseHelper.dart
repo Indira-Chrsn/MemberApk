@@ -85,7 +85,7 @@ class databaseHelper {
   */
 
   // get user by email/phoneNumber
-  Future<Object> _getMemberByPhoneNum(String phoneNum) async {
+  Future<Object> getMemberByPhoneNum(String phoneNum) async {
     final db = await database;
     return await db.query('users',
         columns: ['phoneNumber'],
@@ -100,7 +100,7 @@ class databaseHelper {
   }
 
 // register
-  Future<int?> _registerUser(users user) async {
+  Future<int?> registerUser(users user) async {
     final db = await database;
     await db.insert('users', user.toJson(),
         conflictAlgorithm: ConflictAlgorithm.replace);
