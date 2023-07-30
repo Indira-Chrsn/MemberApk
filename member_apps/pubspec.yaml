@@ -36,7 +36,6 @@ dependencies:
   cupertino_icons: ^1.0.2
   # https: ^0.13.3
   sqflite: ^2.0.2
-  databaseHelper: ^0.0.1
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:member_apps/components/textfield.dart';
+import 'package:member_apps/pages/index.dart';
+import 'package:member_apps/pages/register_page.dart';
 
 class LoginPage extends StatelessWidget {
   LoginPage({super.key});
@@ -11,7 +13,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 201, 204, 204),
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
       body: SafeArea(
         child: Center(
           child: Column(
@@ -59,6 +61,22 @@ class LoginPage extends StatelessWidget {
                 obscureText: true,
               ),
 
+              const SizedBox(
+                height: 25,
+              ),
+
+              ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.blueAccent,
+                    onPrimary: Colors.white,
+                  ),
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => index()));
+                  },
+                  child: Text('Masuk')
+              ),
+
               // forgot password
 
               // signin button
@@ -68,6 +86,16 @@ class LoginPage extends StatelessWidget {
               // google sign in button
 
               // register
+              TextButton(
+                style: ButtonStyle(
+                  foregroundColor: MaterialStateProperty.all(Colors.greenAccent),
+                ),
+                onPressed: () {
+                  Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => Register()));
+                },
+                child: Text("Daftar"),
+              )
             ],
           ),
         ),
