@@ -10,6 +10,52 @@ class databaseHelper {
   static const String _dbName = "memberApk.db";
   static Database? _database;
 
+  static final String createTableUser = '''
+  CREATE TABLE users(
+        userID INTEGER PRIMARY KEY AUTOINCREMENT, 
+        username TEXT NOT NULL, 
+        email VARCHAR NOT NULL, 
+        password TEXT NOT NULL, 
+        phoneNumber VARCHAR NOT NULL, 
+        DateOfBirth DATE NOT NULL, 
+        userStatus TEXT NOT NULL,
+        points INTEGER DEFAULT 0,
+        storeID INTEGER NOT NULL)
+  ''';
+
+  static final String createTableStore = '''
+  CREATE TABLE store(
+        storeID INTEGER PRIMARY KEY AUTOINCREMENT,
+        memberID INTEGER, 
+        name TEXT NOT NULL, 
+        city TEXT NOT NULL, 
+        telephone VARCHAR NOT NULL, 
+        member_amount INTEGER,
+        FOREIGN KEY (memberID) REFERENCES users(userID) ON DELETE CASCADE)
+  ''';
+
+  static final String createTableService = '''
+  CREATE TABLE service(
+        serviceID INTEGER PRIMARY KEY AUTOINCREMENT,
+        userID INTEGER,
+        storeID INTEGER,
+        status TEXT NOT NULL,
+        startDate INTEGER NOT NULL,
+        finishDate INTEGER NOT NULL,
+        FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE,
+        FOREIGN KEY (storeID) REFERENCES store(storeID) ON DELETE CASCADE)
+  ''';
+
+  static final String createTableMembership = '''
+  CREATE TABLE membership(
+        membershipID INTEGER PRIMARY KEY AUTOINCREMENT,
+        userID INTEGER,
+        storeID INTEGER,
+        joinDate INTEGER NOT NULL,
+        FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE,
+        FOREIGN KEY (storeID) REFERENCES store(storeID) ON DELETE CASCADE)
+  ''';
+
 // open and initialize database
 
   Future<Database> get database async {
@@ -23,61 +69,23 @@ class databaseHelper {
 
   static Future<Database> initDB() async {
     return openDatabase(join(await getDatabasesPath(), _dbName),
-        onCreate: ((db, version) async => {
-              await db.execute(
-                  'PRAGMA foreign_keys = ON'), //PRAGMA to enable foreign key constraints
-              await _createDatabase(db, _version)
-            }));
+        version: _version, onCreate: (db, version) async {
+      await db.execute(
+          'PRAGMA foreign_keys = ON'); //PRAGMA to enable foreign key constraints
+      await db.execute(createTableUser);
+      await db.execute(createTableStore);
+      await db.execute(createTableService);
+      await db.execute(createTableMembership);
+    });
   }
 
-  static Future<void> _createDatabase(Database db, int _version) async {
-    await db.execute('''
-      CREATE TABLE [IF NOT EXIST] users(
-        userID INTEGER PRIMARY KEY AUTOINCREMENT, 
-        username TEXT NOT NULL, 
-        email VARCHAR NOT NULL, 
-        password TEXT NOT NULL, 
-        phoneNumber VARCHAR NOT NULL, 
-        DateOfBirth DATE NOT NULL, 
-        userStatus TEXT NOT NULL),
-        points INTEGER DEFAULT 0,
-        storeID INTEGER NOT NULL
-    ''');
-
-    await db.execute('''
-      CREATE TABLE [IF NOT EXIST] store(
-        storeID INTEGER PRIMARY KEY AUTOINCREMENT,
-        memberID INTEGER, 
-        name TEXT NOT NULL, 
-        city TEXT NOT NULL, 
-        telephone VARCHAR NOT NULL, 
-        member_amount INTEGER,
-        FOREIGN KEY (memberID) REFERENCES users(userID) ON DELETE CASCADE)
-    ''');
-
-    await db.execute('''
-      CREATE TABLE [IF NOT EXIST] service(
-        serviceID INTEGER PRIMARY KEY AUTOINCREMENT,
-        userID INTEGER,
-        storeID INTEGER,
-        status TEXT NOT NULL,
-        startDate INTEGER NOT NULL,
-        finishDate INTEGER NOT NULL,
-        FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE,
-        FOREIGN KEY (tokoID) REFERENCES store(storeID) ON DELETE CASCADE
-        )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE [IF NOT EXIST] membership(
-        membershipID INTEGER PRIMARY KEY AUTOINCREMENT,
-        userID INTEGER,
-        storeID INTEGER,
-        joinDate INTEGER NOT NULL,
-        FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE,
-        FOREIGN KEY (storeID) REFERENCES store(storeID) ON DELETE CASCADE
-        )
-    ''');
+  Future<bool> isDatabaseConnected() async {
+    try {
+      final db = await initDB();
+      return db.isOpen;
+    } catch (e) {
+      return false;
+    }
   }
 
   /*
@@ -85,18 +93,34 @@ class databaseHelper {
   */
 
   // get user by email/phoneNumber
-  Future<Object> getMemberByPhoneNum(String phoneNum) async {
+  Future<users?> getMemberByPhoneNum(String phoneNum) async {
     final db = await database;
-    return await db.query('users',
-        columns: ['phoneNumber'],
-        where: 'phoneNumber = ?',
-        whereArgs: [phoneNum]);
+    final maps = await db
+        .query('users', where: 'phoneNumber = ?', whereArgs: [phoneNum]);
+
+    if (maps.isEmpty) {
+      return null;
+    }
+
+    return users.fromJson(maps.first);
   }
 
-  Future<Object> _getMemberByEmail(String email) async {
+  Future<users?> getMemberByEmail(String email) async {
     final db = await database;
-    return await db.query('users',
-        columns: ['email'], where: 'email = ?', whereArgs: [email]);
+    final maps =
+        await db.query('users', where: 'email = ?', whereArgs: [email]);
+
+    if (maps.isEmpty) {
+      return null;
+    }
+
+    return users.fromJson(maps.first);
+  }
+
+  Future<List<Map<String, dynamic>>> getAllUser() async {
+    final db = await database;
+
+    return await db.query('users');
   }
 
 // register
@@ -118,7 +142,7 @@ class databaseHelper {
   Future<void> _addPoints(users member, int pointsToAdd) async {
     final db = await database;
     final currentPoints = member.points;
-    final totalPoints = currentPoints + pointsToAdd;
+    final totalPoints = currentPoints! + pointsToAdd;
 
     await db.update('users', {'points': totalPoints},
         where: 'id = ?', whereArgs: [member.userID]);

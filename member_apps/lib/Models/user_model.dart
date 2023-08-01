@@ -6,7 +6,7 @@ class users {
   final String phoneNumber;
   final int? dateOfBirth;
   final String userStatus;
-  final int points;
+  final int? points;
   final int? storeID;
 
   const users(
@@ -17,7 +17,7 @@ class users {
       required this.phoneNumber,
       required this.dateOfBirth,
       required this.userStatus,
-      required this.points,
+      this.points,
       this.storeID});
 
   factory users.fromJson(Map<String, dynamic> json) => users(

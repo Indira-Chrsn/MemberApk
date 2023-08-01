@@ -3,8 +3,15 @@ import 'package:member_apps/components/textfield.dart';
 import 'package:member_apps/pages/index.dart';
 import 'package:member_apps/pages/register_page.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  LoginState createState() => LoginState();
+}
+class LoginState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
+  // LoginStatee({super.key});
 
   // text editing controller
   final usernameController = TextEditingController();
@@ -14,8 +21,10 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 255, 255, 255),
-      body: SingleChildScrollView(
-        child: Center(
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Center(
           child: Column(
             children: [
               const SizedBox(
@@ -48,6 +57,7 @@ class LoginPage extends StatelessWidget {
                 controller: usernameController,
                 hintText: 'Username',
                 obscureText: false,
+                validatorText: "username",
               ),
 
               const SizedBox(
@@ -59,6 +69,7 @@ class LoginPage extends StatelessWidget {
                 controller: passwordController,
                 hintText: 'Password',
                 obscureText: true,
+                validatorText: "Password",
               ),
 
               const SizedBox(
@@ -71,8 +82,10 @@ class LoginPage extends StatelessWidget {
                     onPrimary: Colors.white,
                   ),
                   onPressed: () {
-                    Navigator.push(context,
+                    if (_formKey.currentState!.validate()) {
+                      Navigator.push(context,
                         MaterialPageRoute(builder: (context) => index()));
+                    }
                   },
                   child: Text('Masuk')
               ),
@@ -99,6 +112,8 @@ class LoginPage extends StatelessWidget {
             ],
           ),
         ),
+        )
+        
       ),
     );
   }

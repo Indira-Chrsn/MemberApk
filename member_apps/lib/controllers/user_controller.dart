@@ -4,24 +4,34 @@ import 'package:sqflite/sqflite.dart';
 import 'package:member_apps/Services/databaseHelper.dart';
 
 // user register method
-/*Future<int> _registerUser(Database db, int? id, String uname, String email,
-    String password, String phoneNumber, int DOB, String userStatus, int points, int? storeID) async {
+Future<bool> userRegistered(
+    String uname,
+    String email,
+    String password,
+    String phoneNumber,
+    int? DOB,
+    String userStatus,) async {
   var newUser = users(
-      userID: id,
       username: uname,
       email: email,
       password: password,
       phoneNumber: phoneNumber,
       dateOfBirth: DOB,
-      userStatus: userStatus,
-      points: points,
-      storeID: storeID);
+      userStatus: userStatus,);
 
-  final db = await databaseHelper.getDB();
-  return await db.insert('users', newUser.toJson(),
-      conflictAlgorithm: ConflictAlgorithm.replace);
+  databaseHelper dbHelper = databaseHelper();
+
+  final checkUserByPhone = databaseHelper().getMemberByPhoneNum(phoneNumber);
+  final checkUserByEmail = databaseHelper().getMemberByEmail(email);
+  if (checkUserByPhone == null && checkUserByEmail == null) {
+    databaseHelper().registerUser(newUser);
+    return true;
+  }
+
+  return false;
 }
 
+/*
 Future<int> becomeMember(Database db, int? membershipID, int? memberID,
     int? storeID, int joinDate) async {
   final db = await databaseHelper.getDB();
