@@ -25,8 +25,14 @@ class MyTextField extends StatelessWidget {
         return "<field> tidak boleh kosong!", else, return nothing. the return
         value will be shown using snackbar (check the buttons in register and login page)
         */
-        validator: (value) =>
-          value!.isEmpty ? validatorText+" tidak boleh kosong!" : null,
+        validator: (value) {
+          value!.isEmpty ? validatorText + " tidak boleh kosong!" : null;
+          if (validatorText == "Password") {
+            value.length < 8
+                ? validatorText + "harus lebih dari 8 karakter"
+                : null;
+          }
+        },
         decoration: InputDecoration(
             enabledBorder: const OutlineInputBorder(
               borderSide: BorderSide(color: Colors.white),

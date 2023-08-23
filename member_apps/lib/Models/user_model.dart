@@ -4,10 +4,10 @@ class users {
   final String email;
   final String password;
   final String phoneNumber;
-  final int? dateOfBirth;
+  final int dateOfBirth;
   final String userStatus;
-  final int? points;
-  final int? storeID;
+  final int points;
+  final int storeID;
 
   const users(
       {this.userID,
@@ -17,8 +17,8 @@ class users {
       required this.phoneNumber,
       required this.dateOfBirth,
       required this.userStatus,
-      this.points,
-      this.storeID});
+      required this.points,
+      required this.storeID});
 
   factory users.fromJson(Map<String, dynamic> json) => users(
       userID: json['userID'],
@@ -32,7 +32,6 @@ class users {
       storeID: json['storeID']);
 
   Map<String, dynamic> toJson() => {
-        'userID': userID,
         'username': username,
         'email': email,
         'password': password,

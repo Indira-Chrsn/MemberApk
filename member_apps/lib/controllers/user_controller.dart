@@ -3,32 +3,54 @@ import 'package:member_apps/Models/user_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:member_apps/Services/databaseHelper.dart';
 
+class userController {
+  databaseHelper dbHelper = databaseHelper();
+
 // user register method
-Future<bool> userRegistered(
+  Future<void> userRegistered(
     String uname,
     String email,
     String password,
     String phoneNumber,
-    int? DOB,
-    String userStatus,) async {
-  var newUser = users(
-      username: uname,
-      email: email,
-      password: password,
-      phoneNumber: phoneNumber,
-      dateOfBirth: DOB,
-      userStatus: userStatus,);
+    int DOB,
+    String userStatus,
+  ) async {
+    final users newUser = users(
+        username: uname,
+        email: email,
+        password: password,
+        phoneNumber: phoneNumber,
+        dateOfBirth: DOB,
+        userStatus: userStatus,
+        points: 0,
+        storeID: 0);
 
-  databaseHelper dbHelper = databaseHelper();
+    // final checkUserByPhone = await dbHelper.getMemberByPhoneNum(phoneNumber);
+    // final checkUserByEmail = await dbHelper.getMemberByEmail(email);
+    // if (checkUserByPhone == null && checkUserByEmail == null) {
+    await dbHelper.registerUser(newUser);
+    // return true;
+    // }
 
-  final checkUserByPhone = databaseHelper().getMemberByPhoneNum(phoneNumber);
-  final checkUserByEmail = databaseHelper().getMemberByEmail(email);
-  if (checkUserByPhone == null && checkUserByEmail == null) {
-    databaseHelper().registerUser(newUser);
-    return true;
+    // return false;
   }
 
-  return false;
+// fetch all user data
+  Future<List<users>> fetchAllUser() async {
+    final userData = await dbHelper.fetchAllUser();
+
+    return userData.map((user) => users.fromJson(user)).toList();
+  }
+
+// add points
+  Future<void> addPoints(int userID, int pointsToAdd) async {
+    final user = await dbHelper.getMemberByID(userID);
+
+    if (user != null) {
+      final updatedPoints = user.userID! + pointsToAdd;
+      await dbHelper.addPoints(userID, updatedPoints);
+    }
+  }
 }
 
 /*

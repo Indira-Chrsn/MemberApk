@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:member_apps/Models/user_model.dart';
 import 'package:member_apps/Services/databaseHelper.dart';
 import 'package:member_apps/components/textfield.dart';
@@ -14,14 +15,15 @@ class Register extends StatefulWidget {
 }
 
 class RegisterState extends State<Register> {
-  final _formKey = GlobalKey<FormState>();
+  final _formKey = new GlobalKey<FormState>();
 
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   final emailController = TextEditingController();
   final phoneNumController = TextEditingController();
-  int? selectedDOB;
+  final dateEditingController = TextEditingController();
+  int selectedDOB = 0;
 
   void _onRegisterButtonPressed() async {
     String email = emailController.text;
@@ -29,18 +31,18 @@ class RegisterState extends State<Register> {
     String password = passwordController.text;
     String confirmPassword = confirmPasswordController.text;
     String phoneNumber = phoneNumController.text;
-    int? dateOfBirth = selectedDOB;
+    int dateOfBirth = selectedDOB;
 
     databaseHelper dbHelper = databaseHelper();
     users newUser = users(
-      username: username,
-      email: email,
-      password: password,
-      phoneNumber: phoneNumber,
-      dateOfBirth: dateOfBirth,
-      userStatus: "member",
-      points: 0,
-    );
+        username: username,
+        email: email,
+        password: password,
+        phoneNumber: phoneNumber,
+        dateOfBirth: dateOfBirth,
+        userStatus: "member",
+        points: 0,
+        storeID: 0);
 
 /*
     if (password == confirmPassword) {
@@ -56,6 +58,12 @@ class RegisterState extends State<Register> {
                             phoneNumController.text,
                             selectedDOB,
                             "member"); */
+  }
+
+  @override
+  void initState() {
+    dateEditingController.text = "";
+    super.initState();
   }
 
   @override
@@ -147,7 +155,11 @@ class RegisterState extends State<Register> {
 
                 // Datepicker for date of birth
                 // birthDate(),
-                TextFormField(
+                TextField(
+                  controller: dateEditingController,
+                  decoration: InputDecoration(
+                      icon: Icon(Icons.calendar_today),
+                      labelText: "Tanggal Lahir"),
                   onTap: () async {
                     DateTime? pickedDate = await showDatePicker(
                       context: context,
@@ -158,12 +170,15 @@ class RegisterState extends State<Register> {
 
                     if (pickedDate != null) {
                       selectedDOB = pickedDate.millisecondsSinceEpoch ~/ 1000;
+                      setState(() {
+                        dateEditingController.text = pickedDate.toString();
+                      });
                     }
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(selectedDOB.toString())));
                   },
                   readOnly: true,
-                  decoration: InputDecoration(
-                    labelText: 'Tanggal Lahir',
-                  ),
                 ),
 
                 const SizedBox(
@@ -185,7 +200,7 @@ class RegisterState extends State<Register> {
                               const SnackBar(
                                   content: Text('Data anda akan diproses')));
 
-                          var check = userRegistered(
+                          userController().userRegistered(
                               usernameController.text,
                               emailController.text,
                               passwordController.text,
@@ -193,14 +208,18 @@ class RegisterState extends State<Register> {
                               selectedDOB,
                               "member");
 
-                          if (check == null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('data null')));
-                          } else {
-                            print(check);
-                            // ScaffoldMessenger.of(context).showSnackBar(
-                            //     const SnackBar(content: Text('data not null')));
-                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(selectedDOB.toString())));
+
+                          // if (check == true) {
+                          //   ScaffoldMessenger.of(context).showSnackBar(
+                          //       const SnackBar(content: Text('Berhasil terdaftar')));
+                          // } else {
+                          //   ScaffoldMessenger.of(context).showSnackBar(
+                          //       const SnackBar(content: Text('gagal terdaftar')));
+                          //   // ScaffoldMessenger.of(context).showSnackBar(
+                          //   //     const SnackBar(content: Text('data not null')));
+                          // }
                         }
                       }
                     },

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io' as io;
 import 'package:member_apps/Models/membership_model.dart';
 import 'package:member_apps/Models/service_model.dart';
 import 'package:sqflite/sqflite.dart';
@@ -11,49 +14,55 @@ class databaseHelper {
   static Database? _database;
 
   static final String createTableUser = '''
-  CREATE TABLE users(
-        userID INTEGER PRIMARY KEY AUTOINCREMENT, 
-        username TEXT NOT NULL, 
-        email VARCHAR NOT NULL, 
-        password TEXT NOT NULL, 
-        phoneNumber VARCHAR NOT NULL, 
-        DateOfBirth DATE NOT NULL, 
-        userStatus TEXT NOT NULL,
-        points INTEGER DEFAULT 0,
-        storeID INTEGER NOT NULL)
+  CREATE TABLE "users" (
+    "userID"	INTEGER NOT NULL,
+    "username"	TEXT NOT NULL,
+    "email"	TEXT NOT NULL UNIQUE,
+    "password"	TEXT NOT NULL,
+    "phoneNumber"	TEXT NOT NULL UNIQUE,
+    "dateOfBirth"	INTEGER NOT NULL,
+    "userStatus"	TEXT NOT NULL,
+    "points"	INTEGER DEFAULT 0,
+    "storeID"	INTEGER,
+    PRIMARY KEY("userID" AUTOINCREMENT)
+  )
   ''';
 
   static final String createTableStore = '''
-  CREATE TABLE store(
-        storeID INTEGER PRIMARY KEY AUTOINCREMENT,
-        memberID INTEGER, 
-        name TEXT NOT NULL, 
-        city TEXT NOT NULL, 
-        telephone VARCHAR NOT NULL, 
-        member_amount INTEGER,
-        FOREIGN KEY (memberID) REFERENCES users(userID) ON DELETE CASCADE)
+  CREATE TABLE "store" (
+	"storeID"	INTEGER NOT NULL,
+	"name"	TEXT NOT NULL,
+	"city"	TEXT NOT NULL,
+	"telephone"	TEXT NOT NULL,
+	"memberAmount"	INTEGER NOT NULL DEFAULT 0,
+	PRIMARY KEY("storeID" AUTOINCREMENT)
+)
   ''';
 
   static final String createTableService = '''
-  CREATE TABLE service(
-        serviceID INTEGER PRIMARY KEY AUTOINCREMENT,
-        userID INTEGER,
-        storeID INTEGER,
-        status TEXT NOT NULL,
-        startDate INTEGER NOT NULL,
-        finishDate INTEGER NOT NULL,
-        FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE,
-        FOREIGN KEY (storeID) REFERENCES store(storeID) ON DELETE CASCADE)
+  CREATE TABLE "service" (
+	"serviceID"	INTEGER NOT NULL,
+	"userID"	INTEGER,
+	"storeID"	INTEGER,
+	"status"	TEXT NOT NULL,
+	"startDate"	INTEGER,
+	"finishDate"	INTEGER,
+	FOREIGN KEY("storeID") REFERENCES "store"("storeID") ON DELETE CASCADE,
+	FOREIGN KEY("userID") REFERENCES "users"("userID") ON DELETE CASCADE,
+	PRIMARY KEY("serviceID" AUTOINCREMENT)
+)
   ''';
 
   static final String createTableMembership = '''
-  CREATE TABLE membership(
-        membershipID INTEGER PRIMARY KEY AUTOINCREMENT,
-        userID INTEGER,
-        storeID INTEGER,
-        joinDate INTEGER NOT NULL,
-        FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE,
-        FOREIGN KEY (storeID) REFERENCES store(storeID) ON DELETE CASCADE)
+ CREATE TABLE "membership" (
+	"membershipID"	INTEGER NOT NULL,
+	"userID"	INTEGER,
+	"storeID"	INTEGER,
+	"joinDate"	INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY("membershipID" AUTOINCREMENT),
+	FOREIGN KEY("userID") REFERENCES "users"("userID") ON DELETE CASCADE,
+	FOREIGN KEY("storeID") REFERENCES "store"("storeID") ON DELETE CASCADE
+)
   ''';
 
 // open and initialize database
@@ -68,7 +77,8 @@ class databaseHelper {
   }
 
   static Future<Database> initDB() async {
-    return openDatabase(join(await getDatabasesPath(), _dbName),
+    io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    final db = await openDatabase(join(await getDatabasesPath(), _dbName),
         version: _version, onCreate: (db, version) async {
       await db.execute(
           'PRAGMA foreign_keys = ON'); //PRAGMA to enable foreign key constraints
@@ -77,6 +87,8 @@ class databaseHelper {
       await db.execute(createTableService);
       await db.execute(createTableMembership);
     });
+
+    return db;
   }
 
   Future<bool> isDatabaseConnected() async {
@@ -93,7 +105,7 @@ class databaseHelper {
   */
 
   // get user by email/phoneNumber
-  Future<users?> getMemberByPhoneNum(String phoneNum) async {
+  /* Future<users?> getMemberByPhoneNum(String phoneNum) async {
     final db = await database;
     final maps = await db
         .query('users', where: 'phoneNumber = ?', whereArgs: [phoneNum]);
@@ -103,8 +115,48 @@ class databaseHelper {
     }
 
     return users.fromJson(maps.first);
+  } */
+
+  Future<List<Map<String, dynamic>>> getMemberByPhoneNum(
+      String phoneNum) async {
+    final db = await database;
+    return await db.rawQuery(
+        '''SELECT * from "users" WHERE phoneNumber = ?''', [phoneNum]);
   }
 
+  Future<List<Map<String, dynamic>>> getMemberByEmail(String email) async {
+    final db = await database;
+    return await db
+        .rawQuery('''SELECT * from "users" WHERE email = ?''', [email]);
+  }
+
+  Future<users?> getMemberByID(int userID) async {
+    final db = await database;
+    var result = await db
+        .rawQuery('''SELECT * from "users" WHERE userID = ?''', [userID]);
+
+    if (result.length > 0) {
+      return users.fromJson(result.first);
+    }
+
+    return null;
+  }
+
+  Future<users?> getLoginUser(String emailOrPhoneNum, String password) async {
+    var db = await database;
+
+    var res = await db.rawQuery(
+        '''SELECT * FROM "users" WHERE (email = ? OR phoneNumber = ?) AND password = ?''',
+        [emailOrPhoneNum, emailOrPhoneNum, password]);
+
+    if (res.length > 0) {
+      return users.fromJson(res.first);
+    }
+
+    return null;
+  }
+
+/*
   Future<users?> getMemberByEmail(String email) async {
     final db = await database;
     final maps =
@@ -115,7 +167,7 @@ class databaseHelper {
     }
 
     return users.fromJson(maps.first);
-  }
+  } */
 
   Future<List<Map<String, dynamic>>> getAllUser() async {
     final db = await database;
@@ -124,28 +176,29 @@ class databaseHelper {
   }
 
 // register
-  Future<int?> registerUser(users user) async {
-    final db = await database;
+  Future<void> registerUser(users user) async {
+    final db =
+        await database; //database is from get database function on line 67
     await db.insert('users', user.toJson(),
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<int?> _becomeMember(membership newMember) async {
+  Future<int> _becomeMember(membership newMember) async {
     final db = await database;
-    await db.insert('membership', newMember.toJson(),
+    return await db.insert('membership', newMember.toJson(),
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   /*
   admin helper
   */
-  Future<void> _addPoints(users member, int pointsToAdd) async {
+  Future<void> addPoints(int userID, int totalPoints) async {
     final db = await database;
-    final currentPoints = member.points;
-    final totalPoints = currentPoints! + pointsToAdd;
+    // final currentPoints = member.points;
+    // final totalPoints = currentPoints + pointsToAdd;
 
     await db.update('users', {'points': totalPoints},
-        where: 'id = ?', whereArgs: [member.userID]);
+        where: 'id = ?', whereArgs: [userID]);
   }
 
   /*
@@ -166,4 +219,9 @@ class databaseHelper {
 
   /*general helper (login, logout)
   */
+
+  Future<List<Map<String, dynamic>>> fetchAllUser() async {
+    final db = await database;
+    return await db.rawQuery('''SELECT * from "users"''');
+  }
 }
