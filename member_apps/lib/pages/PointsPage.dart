@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:member_apps/Models/user_model.dart';
+import 'package:member_apps/Services/databaseHelper.dart';
 import 'package:member_apps/components/textfield.dart';
+import 'package:member_apps/controllers/user_controller.dart';
 
 class PointsPage extends StatefulWidget {
   // const PointsPage({super.key});
@@ -50,10 +52,17 @@ class PointsState extends State<PointsPage> {
                   if (phoneNumController.text.isNotEmpty) {
                     setState(() {
                       points = int.parse(pointsController.text);
+
+                      userController()
+                          .addPoints(phoneNumController.text, points!);
+
+                      Future<users?> updatedUser = databaseHelper()
+                          .getMemberByPhoneNum(phoneNumController.text);
                     });
                   }
                 },
-                child: Text("Add Points"))
+                child: Text("Add Points")),
+            Text(user.points.toString())
           ]),
         ),
       ),

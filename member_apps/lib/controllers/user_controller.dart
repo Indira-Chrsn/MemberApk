@@ -43,12 +43,12 @@ class userController {
   }
 
 // add points
-  Future<void> addPoints(int userID, int pointsToAdd) async {
-    final user = await dbHelper.getMemberByID(userID);
+  Future<void> addPoints(String phoneNum, int pointsToAdd) async {
+    final user = await dbHelper.getMemberByPhoneNum(phoneNum);
 
     if (user != null) {
-      final updatedPoints = user.userID! + pointsToAdd;
-      await dbHelper.addPoints(userID, updatedPoints);
+      final updatedPoints = user.points + pointsToAdd;
+      await dbHelper.addPoints(phoneNum, updatedPoints);
     }
   }
 }

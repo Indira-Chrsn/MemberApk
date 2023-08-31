@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:member_apps/Models/user_model.dart';
 import 'package:member_apps/Services/databaseHelper.dart';
 import 'package:member_apps/components/textfield.dart';
+import 'package:member_apps/pages/admin_Homepage.dart';
 import 'package:member_apps/pages/homepage.dart';
 import 'package:member_apps/pages/index.dart';
 import 'package:member_apps/pages/register_page.dart';
 import 'package:member_apps/controllers/user_controller.dart';
 import 'package:member_apps/pages/testPage.dart';
 import 'package:member_apps/pages/PointsPage.dart';
+
+import '_homePage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -96,12 +99,20 @@ class LoginState extends State<LoginPage> {
                             dataController.text, passwordController.text);
                         
                         if (user != null) {
-                          Navigator.push(
+                          if (user.userStatus == "member") {
+                            Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => PointsPage(
+                                builder: (context) => Homepage(
                                   user: user,
                                 )));
+                          } else {
+                            Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => admin_Homepage(
+                                )));
+                          }
                         } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -159,8 +170,8 @@ class LoginState extends State<LoginPage> {
                         onPrimary: Colors.white,
                       ),
                       onPressed: () async {
-                        userController().userRegistered("Ayaa", "ayaa@test.com",
-                            "aya1", "08111", 1024524096, "member");
+                        userController().userRegistered("admin1", "admin1@test.com",
+                            "admin1", "9090", 1024524096, "admin");
                         // if (await check) {
                         //   ScaffoldMessenger.of(context).showSnackBar(
                         //     const SnackBar(content: Text('check = true')));

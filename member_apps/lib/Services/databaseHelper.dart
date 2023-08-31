@@ -117,11 +117,18 @@ class databaseHelper {
     return users.fromJson(maps.first);
   } */
 
-  Future<List<Map<String, dynamic>>> getMemberByPhoneNum(
-      String phoneNum) async {
-    final db = await database;
-    return await db.rawQuery(
-        '''SELECT * from "users" WHERE phoneNumber = ?''', [phoneNum]);
+  Future<users?> getMemberByPhoneNum(String phoneNum) async {
+      var db = await database;
+
+      var res = await db.rawQuery(
+        '''SELECT * FROM "users" WHERE phoneNumber = ?''',
+        [phoneNum]);
+
+    if (res.length > 0) {
+      return users.fromJson(res.first);
+    }
+
+    return null;
   }
 
   Future<List<Map<String, dynamic>>> getMemberByEmail(String email) async {
@@ -192,13 +199,13 @@ class databaseHelper {
   /*
   admin helper
   */
-  Future<void> addPoints(int userID, int totalPoints) async {
+  Future<void> addPoints(String phoneNum, int totalPoints) async {
     final db = await database;
     // final currentPoints = member.points;
     // final totalPoints = currentPoints + pointsToAdd;
 
     await db.update('users', {'points': totalPoints},
-        where: 'id = ?', whereArgs: [userID]);
+        where: 'phoneNumber = ?', whereArgs: [phoneNum]);
   }
 
   /*
