@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:member_apps/pages/admin_Homepage.dart';
 import 'pages/login_page.dart';
 import 'pages/testPage.dart';
 
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Member Apk',
       theme: ThemeData(primarySwatch: Colors.blueGrey),
-      home: LoginPage(),
+      home: admin_Homepage(),
     );
   }
 }
