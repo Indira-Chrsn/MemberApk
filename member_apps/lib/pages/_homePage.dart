@@ -1,4 +1,6 @@
 import 'package:another_carousel_pro/another_carousel_pro.dart';
+import 'package:member_apps/pages/profilePage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:member_apps/pages/homepage.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -8,11 +10,13 @@ import '../components/catalogIcons.dart';
 import '../components/my_points.dart';
 
 class Homepage extends StatefulWidget {
-  users user;
-  Homepage({super.key, required this.user});
+  // users user;
+  Homepage({
+    super.key,
+  });
 
   @override
-  HomepageState createState() => HomepageState(user);
+  HomepageState createState() => HomepageState();
 }
 
 class HomepageState extends State<Homepage> {
@@ -24,8 +28,31 @@ class HomepageState extends State<Homepage> {
   final String accessoriesURL =
       'https://www.tokopedia.com/dewatacomm/etalase/asesoris-hp';
 
-  users user;
-  HomepageState(this.user);
+  String username = '';
+  String email = '';
+  String phoneNum = '';
+  int points = 0;
+  bool isLoggedIn = false;
+  // users user;
+  // HomepageState(this.user);
+
+  // SharedPreferences
+  void loadUserData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      username = prefs.getString('username') ?? '';
+      email = prefs.getString('email') ?? '';
+      phoneNum = prefs.getString('phoneNumber') ?? '';
+      points = prefs.getInt('points') ?? 0;
+      isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +88,7 @@ class HomepageState extends State<Homepage> {
                           ),
                         ),
                         Text(
-                          " Hi, ${user.username}",
+                          " Hi, $username",
                           style: TextStyle(
                             fontSize: 28,
                           ),
@@ -98,7 +125,7 @@ class HomepageState extends State<Homepage> {
                         ],
                       ),
                       Text(
-                        "${user.points}",
+                        "$points",
                         style: TextStyle(fontSize: 36),
                       ),
                       SizedBox(
@@ -209,7 +236,10 @@ class HomepageState extends State<Homepage> {
                       color: Colors.blue,
                     )),
                 IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context, MaterialPageRoute(builder: (context) => MyProfilePage()));
+                    },
                     icon: Icon(
                       Icons.person,
                       size: 32,

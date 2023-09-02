@@ -42,8 +42,8 @@ class index extends StatelessWidget {
                       } else {
                         return ListTile(
                           title: Text(user.username),
-                          subtitle: Text(user.password),
-                          trailing: Text("No date of birth"),
+                          subtitle: Text(user.phoneNumber),
+                          trailing: Text(user.points.toString()),
                         );
                       }
                     });

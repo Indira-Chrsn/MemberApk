@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
+// import 'package:path_provider/path_provider.dart';
 import 'dart:io' as io;
 import 'package:member_apps/Models/membership_model.dart';
 import 'package:member_apps/Models/service_model.dart';
@@ -77,7 +77,7 @@ class databaseHelper {
   }
 
   static Future<Database> initDB() async {
-    io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
+    // io.Directory documentsDirectory = await getApplicationDocumentsDirectory();
     final db = await openDatabase(join(await getDatabasesPath(), _dbName),
         version: _version, onCreate: (db, version) async {
       await db.execute(
@@ -118,11 +118,10 @@ class databaseHelper {
   } */
 
   Future<users?> getMemberByPhoneNum(String phoneNum) async {
-      var db = await database;
+    var db = await database;
 
-      var res = await db.rawQuery(
-        '''SELECT * FROM "users" WHERE phoneNumber = ?''',
-        [phoneNum]);
+    var res = await db.rawQuery(
+        '''SELECT * FROM "users" WHERE phoneNumber = ?''', [phoneNum]);
 
     if (res.length > 0) {
       return users.fromJson(res.first);
