@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:member_apps/Models/user_model.dart';
 import 'package:member_apps/Services/databaseHelper.dart';
 import 'package:member_apps/components/textfield.dart';
@@ -15,15 +14,14 @@ class Register extends StatefulWidget {
 }
 
 class RegisterState extends State<Register> {
-  final _formKey = new GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
 
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   final emailController = TextEditingController();
   final phoneNumController = TextEditingController();
-  final dateEditingController = TextEditingController();
-  int selectedDOB = 0;
+  int? selectedDOB;
 
   void _onRegisterButtonPressed() async {
     String email = emailController.text;
@@ -31,18 +29,18 @@ class RegisterState extends State<Register> {
     String password = passwordController.text;
     String confirmPassword = confirmPasswordController.text;
     String phoneNumber = phoneNumController.text;
-    int dateOfBirth = selectedDOB;
+    int? dateOfBirth = selectedDOB;
 
     databaseHelper dbHelper = databaseHelper();
     users newUser = users(
-        username: username,
-        email: email,
-        password: password,
-        phoneNumber: phoneNumber,
-        dateOfBirth: dateOfBirth,
-        userStatus: "member",
-        points: 0,
-        storeID: 0);
+      username: username,
+      email: email,
+      password: password,
+      phoneNumber: phoneNumber,
+      dateOfBirth: dateOfBirth,
+      userStatus: "member",
+      points: 0,
+    );
 
 /*
     if (password == confirmPassword) {
@@ -61,184 +59,105 @@ class RegisterState extends State<Register> {
   }
 
   @override
-  void initState() {
-    dateEditingController.text = "";
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.lightBlue,
-      body: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-              child: Center(
-            child: Column(
-              children: [
-                const SizedBox(
-                  height: 50,
-                ),
-
-                Text(
-                  "Daftar Disini",
-                  style: TextStyle(
-                    color: Colors.black12,
-                    fontSize: 24,
-                  ),
-                ),
-
-                const SizedBox(
-                  height: 25,
-                ),
-
-                // Username
-
-                MyTextField(
-                  controller: usernameController,
-                  hintText: "Masukkan username",
-                  obscureText: false,
-                  validatorText: "username",
-                ),
-
-                const SizedBox(
-                  height: 25,
-                ),
-
-                // email
-                MyTextField(
-                  controller: emailController,
-                  hintText: "Masukkan email",
-                  obscureText: false,
-                  validatorText: "Email",
-                ),
-
-                const SizedBox(
-                  height: 25,
-                ),
-
-                // phone number
-                MyTextField(
-                  controller: phoneNumController,
-                  hintText: "Masukkan nomor telepon",
-                  obscureText: false,
-                  validatorText: "Nomor telepon",
-                ),
-
-                const SizedBox(
-                  height: 25,
-                ),
-
-                // password
-                MyTextField(
-                  controller: passwordController,
-                  hintText: "Masukkan password",
-                  obscureText: true,
-                  validatorText: "Password",
-                ),
-
-                const SizedBox(
-                  height: 25,
-                ),
-
-                // confirm password
-                MyTextField(
-                  controller: confirmPasswordController,
-                  hintText: "Konfirmasi password",
-                  obscureText: true,
-                  validatorText: "Konfirmasi password",
-                ),
-
-                const SizedBox(
-                  height: 25,
-                ),
-
-                // Datepicker for date of birth
-                // birthDate(),
-                TextField(
-                  controller: dateEditingController,
-                  decoration: InputDecoration(
-                      icon: Icon(Icons.calendar_today),
-                      labelText: "Tanggal Lahir"),
-                  onTap: () async {
-                    DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime.now(),
-                    );
-
-                    if (pickedDate != null) {
-                      selectedDOB = pickedDate.millisecondsSinceEpoch ~/ 1000;
-                      setState(() {
-                        dateEditingController.text = pickedDate.toString();
-                      });
-                    }
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(selectedDOB.toString())));
-                  },
-                  readOnly: true,
-                ),
-
-                const SizedBox(
-                  height: 25,
-                ),
-
-                // Submit register button
-                ElevatedButton(
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        if (passwordController.text !=
-                            confirmPasswordController.text) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Konfirmasi kata sandi tidak sesuai')));
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Data anda akan diproses')));
-
-                          userController().userRegistered(
-                              usernameController.text,
-                              emailController.text,
-                              passwordController.text,
-                              phoneNumController.text,
-                              selectedDOB,
-                              "member");
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(selectedDOB.toString())));
-
-                          // if (check == true) {
-                          //   ScaffoldMessenger.of(context).showSnackBar(
-                          //       const SnackBar(content: Text('Berhasil terdaftar')));
-                          // } else {
-                          //   ScaffoldMessenger.of(context).showSnackBar(
-                          //       const SnackBar(content: Text('gagal terdaftar')));
-                          //   // ScaffoldMessenger.of(context).showSnackBar(
-                          //   //     const SnackBar(content: Text('data not null')));
-                          // }
-                        }
-                      }
-                    },
-                    child: Text("Daftar")),
-
-                const SizedBox(
-                  height: 25,
-                ),
-
-                // Back button (debugging purpose)
-                ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => LoginPage()));
-                    },
-                    child: Text("Kembali")),
-              ],
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Nama',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
             ),
-          ))),
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'Nama wajib diisi';
+              }
+              return null;
+            },
+            onChanged: (value) {
+              setState(() {
+                username = value;
+              });
+            },
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Email',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'Email wajib diisi';
+              }
+            },
+            onChanged: (value) {
+              setState(() {
+                email = value;
+              });
+            },
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Password',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+            obscureText: true,
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'Password wajib diisi';
+              }
+              // Anda dapat menambahkan validasi lainnya untuk password di sini
+              return null;
+            },
+            onChanged: (value) {
+              setState(() {
+                password = value;
+              });
+            },
+          ),
+          SizedBox(height: 16),
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Konfirmasi Password', // Kolom konfirmasi password
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+            obscureText: true,
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'Konfirmasi Password wajib diisi';
+              } else if (value != password) {
+                return 'Konfirmasi Password tidak sesuai dengan Password';
+              }
+              return null;
+            },
+            onChanged: (value) {
+              setState(() {
+                confirmPassword = value;
+              });
+            },
+          ),
+          SizedBox(height: 16),
+          RaisedButton(
+            onPressed: () {
+              if (_formKey.currentState.validate()) {
+              }
+            },
+            child: Text('Daftar'),
+          ),
+        ],
+      ),
     );
   }
 }
